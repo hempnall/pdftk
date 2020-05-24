@@ -16,13 +16,13 @@ error() {
 }
 
 rotate() {
-    if [ 90 -eq "$1" ]; then
+    if [ "90" == "$1" ]; then
         angle=east
-    elif [ 180 -eq "$1" ]; then
+    elif [ "180" == "$1" ]; then
         angle=south
-    elif [ 270 -eq "$1" ]; then
+    elif [ "270" == "$1" ]; then
         angle=west
-    elif [ 360 -eq "$1" ]; then
+    elif [ "360" == "$1" ]; then
         angle=north
     else
         error "invalid angle specified $1"
