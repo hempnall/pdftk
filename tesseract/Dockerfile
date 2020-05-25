@@ -15,3 +15,6 @@ RUN apt update && apt install -y imagemagick tesseract-ocr-eng
 RUN mkdir -p /var/pdftk
 WORKDIR /var/pdftk
 RUN sed -i '/PDF/d' /etc/ImageMagick-6/policy.xml
+COPY main.sh /main.sh
+RUN chmod +x /main.sh
+ENV DENSITY=450
