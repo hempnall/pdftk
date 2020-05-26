@@ -7,7 +7,18 @@ $ docker build -t hempnall/pdftk .
 ```
 This will create a docker image with `pdftk` installed.
 
-## Notes
+# Docker Image Usage
+
+```
+$ docker run hempnall/pdftk rotate 180 input.pdf output.pdf
+```
+> acceptable angles = 90,180,270 and 360 (=0)
+
+```
+$ docker run hempnall/pdftk interleave input1.pdf input2.pdf output.pdf
+```
+
+## PDFTK Command Notes
 
 To collate two PDF files:
 ```
