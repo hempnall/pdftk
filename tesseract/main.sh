@@ -19,6 +19,9 @@ error() {
 convert_to_png() {
     log "convert $1 -> $2"
     convert -density $DENSITY $1[0] $2
+    if [[ $? -ne 0  ]]; then
+        error "unable to convert $1 to png"
+    fi
 }
 
 wayup() {
@@ -28,25 +31,40 @@ wayup() {
     convert_to_png $1 $page1_png
     log "png created"
     tesseract --psm 0 $page1_png $page1_png_output 
+    if [[ $? -ne 0 ]]; then
+        error "unable to detect orientation"
+    fi
     cat $page1_png_output.osd | grep Rotate | awk -F ':' '{ print $2 }' 
+    rm $page1_png_output.osd
+    rm $page1_png
 }
 
 ocr() {
     log "ocr"
     page1_png=$1.0.png
-    convert_to_png $1 $page1_png
+    if [[ ! -f $page1_png  ]]; then
+        convert_to_png $1 $page1_png
+    fi
     tesseract $page1_png $1.ocr
+    if [[ $? -ne 0 ]]; then
+        error "unable to perform ocr"
+    fi
     log "ocr done -> $1.ocr.txt"
     mv $1.ocr.txt $2 
+    rm $page1_png
 }
 
+clean() {
+    log "clean"
+    page1_png=$1.0.png
+    rm -f $page1_png
+}
 
 subcommand=$1
 shift
 
 case $subcommand in
     wayup)
-        log "wayup"
         input_file=$1
         wayup $input_file
         ;;
@@ -54,6 +72,10 @@ case $subcommand in
         input_file=$1
         output_file=$2
         ocr $input_file $output_file 
+        ;;
+    clean)
+        input_file=$1
+        clean $input_file
         ;;
     *) 
         log "invalid command line option"

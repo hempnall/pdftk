@@ -29,15 +29,25 @@ rotate() {
     fi
     log "rotate $2 by $1 degrees -> $3"
     pdftk "$2" cat 1-end$angle output "$3"
+    if [[ $? -ne 0  ]]; then
+        error "unable to rotate $2"
+    fi
 }
 
 interleave() {
     log "interleaving $1 and $2 -> $3"
     pdftk A="$1"  B="$2"  shuffle A Bend-1 output "$3"
+    if [[ $? -ne 0  ]]; then
+        error "unable to interleave side 1 and side 2 docs"
+    fi
 }
 
 pagecount() {
     pdftk "$1" dump_data | grep NumberOfPages | awk '{ print $2 }'
+    res=PIPESTATUS[0]
+    if [[ res -ne 0 ]]; then
+        error "unable to get page count of $1"
+    fi
 }
 
 subcommand=$1
