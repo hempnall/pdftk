@@ -3,6 +3,7 @@ show_usage() {
     echo "Usage: $0 [wayup|ocr] [options]"
     echo "  wayup [filename]"
     echo "    - outputs angle required to correct orientation (e.g. 90,180,270)"
+    echo "  wayup_l [page_count (1 based)] [filename]"
     echo "  ocr [filename] [output_filename]"
 }
 
@@ -18,7 +19,7 @@ error() {
 
 convert_to_png() {
     log "convert $1 -> $2"
-    convert -density $DENSITY $1[0] $2
+    convert -density $DENSITY $1[$3] $2
     if [[ $? -ne 0  ]]; then
         error "unable to convert $1 to png"
     fi
@@ -26,9 +27,10 @@ convert_to_png() {
 
 wayup() {
     log "wayup"
-    page1_png=$1.0.png
+    let page_index=$(( $1  - 1 ))
+    page1_png=$2.$page_index.png
     page1_png_output=$page1_png.output
-    convert_to_png $1 $page1_png
+    convert_to_png $2 $page1_png $page_index
     log "png created"
     tesseract --psm 0 $page1_png $page1_png_output 
     if [[ $? -ne 0 ]]; then
@@ -43,7 +45,7 @@ ocr() {
     log "ocr"
     page1_png=$1.0.png
     if [[ ! -f $page1_png  ]]; then
-        convert_to_png $1 $page1_png
+        convert_to_png $1 $page1_png 0
     fi
     tesseract $page1_png $1.ocr
     if [[ $? -ne 0 ]]; then
@@ -64,10 +66,14 @@ subcommand=$1
 shift
 
 case $subcommand in
-    wayup)
-        input_file=$1
-        wayup $input_file
+    wayup_first)
+        input_file=$2
+        wayup 1 $input_file
         ;;
+    wayup_last)
+        input_file=$2
+        wayup $1 $input_file
+        ;;        
     ocr)
         input_file=$1
         output_file=$2

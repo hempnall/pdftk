@@ -50,10 +50,12 @@ rotate() {
 }
 
 right_way_up() {
-    log "right way up $1"
+    log "right way up $1 $2 $3 $4"
     input_filename=/var/tesseract/$(basename $1)
     output_filename=/var/tesseract/$(basename $2)
-    angle=$( docker run --mount type=bind,src=$directory1,target=/var/tesseract tesseract wayup $input_filename  2>/dev/null )
+    func=$3
+    pagecount=$4
+    angle=$( docker run --mount type=bind,src=$directory1,target=/var/tesseract tesseract $func $pagecount $input_filename   )
     if [[ $? -ne 0 ]]; then
         error "unable to determine angle of text"
         return 1
@@ -70,6 +72,22 @@ right_way_up() {
     else
         mv $1 $2
     fi
+}
+
+right_way_up_first() {
+    indoc=$1
+    outdoc=$2
+    func=wayup_first
+    pagecount=1
+    right_way_up $indoc $outdoc $func $pagecount
+}
+
+right_way_up_last() {
+    indoc=$1
+    outdoc=$2
+    func=wayup_last
+    pagecount=$3
+    right_way_up $indoc $outdoc $func $pagecount
 }
 
 collate() {
@@ -91,7 +109,7 @@ ocr() {
     log "performing ocr on first page"
     input_filename=/var/tesseract/$(basename $1)
     output_filename=/var/tesseract/$(basename $1).txt
-    docker run --mount type=bind,src=$directory1,target=/var/tesseract tesseract ocr $input_filename $output_filename 2>/dev/null 
+    docker run --mount type=bind,src=$directory1,target=/var/tesseract tesseract ocr $input_filename $output_filename 
     if [[ $? -ne 0 ]]; then
         error "unable to ocr $1"
         return 1
@@ -157,7 +175,7 @@ process_side_1() {
             return 1
         fi
 
-        right_way_up "$1" "$1.o"
+        right_way_up_first "$1" "$1.o" 
         if [[ $? -ne 0 ]]; then
             reject $1
             mv "$1.2" $side2_doc  
@@ -166,7 +184,7 @@ process_side_1() {
             return 1
         fi
 
-        right_way_up "$1.2" "$1.2.o"
+        right_way_up_last "$1.2" "$1.2.o" $page_count_2
         if [[ $? -ne 0 ]]; then
             reject "$1.o"
             mv "$1.2" $side2_doc  
@@ -189,7 +207,7 @@ process_side_1() {
         fi
     else
         log "no matching documents"
-        right_way_up $1 "$1.o.pdf"
+        right_way_up_first $1 "$1.o.pdf"
         if [[ $? -ne 0 ]]; then
             reject "$1"
             error "unable to rightwayup doc (single sided)"  
