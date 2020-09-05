@@ -68,7 +68,7 @@ right_way_up() {
             error "unable to rotate $1"
             return 1
         fi 
-        rm $1
+        rm -f $1
     else
         mv $1 $2
     fi
@@ -101,8 +101,8 @@ collate() {
         error "unable to interleave $1 and $2"
         return 1
     fi
-    rm $1
-    rm $2
+    rm -f $1
+    rm -f $2
 }
 
 ocr() {
@@ -222,6 +222,7 @@ process_side_1() {
 side1=$(get_most_recent_side1 $directory1 )
 while [[  $? > 0 ]]; do
     process_side_1 $side1
+    # read -p "press any key"
     side1=$(get_most_recent_side1 $directory1 )  
 done
 log "done"

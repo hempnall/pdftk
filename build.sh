@@ -2,7 +2,7 @@ DOCKER_CONTAINERS="tesseract pdftk"
 
 build_image() {
     pushd $1
-    docker build -t $1 .
+    docker build --network host  -t $1 .
     popd    
 }
 
